@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H-Care Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #F0F3FA;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── SIDEBAR ── */
+        .sidebar {
+            width: 220px;
+            background: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.04);
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 22px;
+        }
+
+        .logo-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #7C5CFF, #A07BFF);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .logo-text {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1A1A2E;
+        }
+
+        .logo-text span { color: #7C5CFF; }
+
+        .register-btn {
+            background: linear-gradient(135deg, #7C5CFF, #A07BFF);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 11px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 28px;
+            width: 100%;
+        }
+
+        .register-btn .plus {
+            margin-left: auto;
+            font-size: 20px;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        nav { flex: 1; }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 13.5px;
+            color: #9CA3AF;
+            margin-bottom: 2px;
+            transition: all 0.15s;
+        }
+
+        .nav-item:hover { background: #F5F3FF; color: #7C5CFF; }
+
+        .nav-item.active {
+            background: #F5F3FF;
+            color: #7C5CFF;
+            font-weight: 600;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* SVG icons */
+        .nav-icon svg { width: 18px; height: 18px; }
+        .nav-item.active .nav-icon svg { stroke: #7C5CFF; }
+        .nav-item:not(.active) .nav-icon svg { stroke: #9CA3AF; }
+
+        .nav-settings {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            cursor: pointer;
+            font-size: 13.5px;
+            color: #9CA3AF;
+            margin-bottom: 14px;
+        }
+
+        .mobile-card {
+            background: linear-gradient(145deg, #EDE8FF, #D8CCFF);
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .mobile-card-img {
+            font-size: 30px;
+            margin-bottom: 6px;
+        }
+
+        .mobile-card h4 {
+            font-size: 12px;
+            font-weight: 700;
+            color: #4A3090;
+            margin-bottom: 10px;
+        }
+
+        .store-badges {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+        }
+
+        .store-badge {
+            background: #2C2C3E;
+            color: white;
+            border-radius: 6px;
+            padding: 5px 9px;
+            font-size: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ── MAIN ── */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 12px;
+            padding: 9px 14px;
+            gap: 8px;
+            width: 280px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .search-bar input {
+            border: none;
+            outline: none;
+            font-size: 13px;
+            color: #9CA3AF;
+            width: 100%;
+            background: transparent;
+        }
+
+        .header-right { display: flex; align-items: center; gap: 12px; }
+
+        .notif-btn {
+            width: 38px;
+            height: 38px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: relative;
+        }
+
+        .notif-dot {
+            position: absolute;
+            top: 7px; right: 7px;
+            width: 7px; height: 7px;
+            background: #FF4757;
+            border-radius: 50%;
+            border: 1.5px solid white;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            background: white;
+            border-radius: 12px;
+            padding: 7px 13px;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .avatar {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #FFAFBD, #FFC3A0);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .user-pill span { font-size: 13px; font-weight: 500; color: #1A1A2E; }
+        .user-pill .caret { color: #9CA3AF; font-size: 11px; }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .stat-icon.blue       { background: #EBF3FF; }
+        .stat-icon.light-blue { background: #E6F4FF; }
+        .stat-icon.orange     { background: #FFF3EA; }
+        .stat-icon.pink       { background: #FFEEF0; }
+
+        .stat-info h3 {
+            font-size: 21px;
+            font-weight: 700;
+            color: #1A1A2E;
+            line-height: 1.2;
+        }
+
+        .stat-info p { font-size: 11.5px; color: #9CA3AF; margin-top: 2px; }
+
+        .stat-more { margin-left: auto; color: #D1D5DB; cursor: pointer; font-size: 16px; letter-spacing: 1px; }
+
+        /* Charts row */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 14px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1A1A2E;
+        }
+
+        .filter-btn {
+            background: #F5F3FF;
+            color: #7C5CFF;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 11px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .legend {
+            display: flex;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            color: #9CA3AF;
+        }
+
+        .legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        .donut-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 8px;
+        }
+
+        /* Bottom row */
+        .bottom-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 260px;
+            gap: 14px;
+        }
+
+        /* Division table */
+        .division-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .division-table th {
+            font-size: 10.5px;
+            color: #9CA3AF;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 0 8px 0;
+            text-align: left;
+        }
+
+        .division-table th:last-child { text-align: right; }
+
+        .division-table td {
+            padding: 9px 0;
+            font-size: 13px;
+            color: #374151;
+            border-top: 1px solid #F3F4F6;
+        }
+
+        .division-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #1A1A2E;
+        }
+
+        .div-name {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .div-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .div-icon.cardio  { background: #FFF0F5; }
+        .div-icon.neuro   { background: #F0F4FF; }
+        .div-icon.surgery { background: #F0FFF8; }
+
+        /* Purple summary card */
+        .summary-card {
+            background: linear-gradient(150deg, #7C5CFF, #A482FF);
+            border-radius: 16px;
+            padding: 20px 18px 14px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .summary-card .big-num {
+            font-size: 38px;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .summary-card .label {
+            font-size: 12px;
+            opacity: 0.75;
+            margin-top: 3px;
+        }
+
+        .summary-card .sub-num {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 12px;
+        }
+
+        .summary-card canvas { margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     SIDEBAR
+═══════════════════════════════════════════ -->
+<aside class="sidebar">
+    <div class="logo">
+        <div class="logo-icon">✚</div>
+        <span class="logo-text"><span>H</span>-care</span>
+    </div>
+
+    <button class="register-btn">
+        Register patient
+        <span class="plus">+</span>
+    </button>
+
+    <nav>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </div>
+            Patients
+        </div>
+        <div class="nav-item active">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+            </div>
+            Overview
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+            </div>
+            Map
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+            </div>
+            Departments
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+            </div>
+            Doctors
+        </div>
+        <div class="nav-item">
+            <div class="nav-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+            </div>
+            History
+        </div>
+    </nav>
+
+    <div class="nav-settings">
+        <div class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+            </svg>
+        </div>
+        Settings
+    </div>
+
+    <div class="mobile-card">
+        <div class="mobile-card-img">👨‍💻</div>
+        <h4>Get mobile app</h4>
+        <div class="store-badges">
+            <div class="store-badge">▶ Play</div>
+            <div class="store-badge"> App</div>
+        </div>
+    </div>
+</aside>
+
+<!-- ═══════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════ -->
+<main class="main">
+
+    <!-- Header -->
+    <div class="header">
+        <div class="search-bar">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="Search...">
+        </div>
+        <div class="header-right">
+            <div class="notif-btn">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                <div class="notif-dot"></div>
+            </div>
+            <div class="user-pill">
+                <div class="avatar">👩</div>
+                <span>Emma Kwan</span>
+                <span class="caret">▾</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon blue">🛏️</div>
+            <div class="stat-info">
+                <h3 id="stat-total-patients">3,256</h3>
+                <p>Total Patients</p>
+            </div>
+            <span class="stat-more">•••</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon light-blue">👥</div>
+            <div class="stat-info">
+                <h3 id="stat-available-staff">394</h3>
+                <p>Available Staff</p>
+            </div>
+            <span class="stat-more">•••</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">💳</div>
+            <div class="stat-info">
+                <h3 id="stat-avg-cost">$2,536</h3>
+                <p>Avg Treat. Costs</p>
+            </div>
+            <span class="stat-more">•••</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon pink">🚑</div>
+            <div class="stat-info">
+                <h3 id="stat-available-cars">38</h3>
+                <p>Available Cars</p>
+            </div>
+            <span class="stat-more">•••</span>
+        </div>
+    </div>
+
+    <!-- Trend + Gender -->
+    <div class="charts-row">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Outpatients vs. Inpatients Trend</span>
+                <button class="filter-btn">Show by months ▾</button>
+            </div>
+            <canvas id="trendChart" height="150"></canvas>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#7C5CFF;"></div>
+                    Inpatients
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background:#00C4CC;"></div>
+                    Outpatients
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Patients by Gender</span>
+            </div>
+            <div class="donut-wrap">
+                <canvas id="genderChart" width="170" height="170"></canvas>
+                <div class="legend" style="margin-top:14px;">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#FF8FA3;"></div>
+                        Female
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#7C5CFF;"></div>
+                        Male
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Admitted + Division + Summary -->
+    <div class="bottom-row">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Time Admitted</span>
+                <button class="filter-btn">Today ▾</button>
+            </div>
+            <canvas id="timeChart" height="110"></canvas>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Patients By Division</span>
+                <span style="color:#D1D5DB; cursor:pointer; letter-spacing:1px;">•••</span>
+            </div>
+            <table class="division-table">
+                <thead>
+                    <tr>
+                        <th>Division</th>
+                        <th>Pt.</th>
+                    </tr>
+                </thead>
+                <tbody id="division-tbody">
+                    <!-- filled by JS -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="summary-card">
+            <div>
+                <div class="big-num" id="summary-month-count">3,240</div>
+                <div class="label">Patients this month</div>
+            </div>
+            <div>
+                <div class="sub-num" id="summary-today-count">232</div>
+                <canvas id="sparklineChart" height="50"></canvas>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script>
+/* ================================================================
+   HARDCODED DATA — update these values to change the dashboard
+================================================================ */
+const DATA = {
+    stats: {
+        totalPatients:  '3,256',
+        availableStaff: '394',
+        avgTreatCost:   '$2,536',
+        availableCars:  '38',
+    },
+
+    trend: {
+        labels:      ['Oct 2019', 'Nov 2019', 'Dec 2019', 'Jan 2020', 'Feb 2020', 'Mar 2020'],
+        inpatients:  [2800, 3200, 2600, 3800, 2900, 3400],
+        outpatients: [1100, 900,  1500, 750,  1300, 950],
+    },
+
+    gender: {
+        female: 28,   // percent
+        male:   72,
+    },
+
+    timeAdmitted: {
+        labels: ['07am', '08am', '09am', '10am', '11am', '12pm'],
+        values: [75, 115, 90, 135, 105, 145],
+    },
+
+    divisions: [
+        { name: 'Cardiology', patients: 247, icon: '❤️', cls: 'cardio'  },
+        { name: 'Neurology',  patients: 164, icon: '🧠', cls: 'neuro'   },
+        { name: 'Surgery',    patients: 86,  icon: '✂️', cls: 'surgery' },
+    ],
+
+    summary: {
+        patientsThisMonth: '3,240',
+        todayCount:        '232',
+        sparkline: [160, 175, 155, 200, 185, 215, 232],
+        sparkDates: ['14', '15', '16', '17', '18', '19', '20'],
+    },
+};
+
+/* ── Populate stat cards ── */
+document.getElementById('stat-total-patients').textContent  = DATA.stats.totalPatients;
+document.getElementById('stat-available-staff').textContent = DATA.stats.availableStaff;
+document.getElementById('stat-avg-cost').textContent        = DATA.stats.avgTreatCost;
+document.getElementById('stat-available-cars').textContent  = DATA.stats.availableCars;
+
+/* ── Populate summary card ── */
+document.getElementById('summary-month-count').textContent = DATA.summary.patientsThisMonth;
+document.getElementById('summary-today-count').textContent = DATA.summary.todayCount;
+
+/* ── Populate division table ── */
+const tbody = document.getElementById('division-tbody');
+DATA.divisions.forEach(d => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td>
+            <div class="div-name">
+                <div class="div-icon ${d.cls}">${d.icon}</div>
+                ${d.name}
+            </div>
+        </td>
+        <td>${d.patients}</td>`;
+    tbody.appendChild(tr);
+});
+
+/* ================================================================
+   CHARTS
+================================================================ */
+
+/* 1 — Trend bar chart */
+new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+        labels: DATA.trend.labels,
+        datasets: [
+            {
+                label: 'Inpatients',
+                data: DATA.trend.inpatients,
+                backgroundColor: '#7C5CFF',
+                borderRadius: 5,
+                borderSkipped: false,
+                barPercentage: 0.42,
+                categoryPercentage: 0.72,
+            },
+            {
+                label: 'Outpatients',
+                data: DATA.trend.outpatients,
+                backgroundColor: '#00C4CC',
+                borderRadius: 5,
+                borderSkipped: false,
+                barPercentage: 0.42,
+                categoryPercentage: 0.72,
+            },
+        ],
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: {
+                grid: { display: false },
+                border: { display: false },
+                ticks: { color: '#9CA3AF', font: { size: 11 } },
+            },
+            y: {
+                grid: { color: '#F3F4F6' },
+                border: { display: false },
+                ticks: { color: '#9CA3AF', font: { size: 11 } },
+            },
+        },
+    },
+});
+
+/* 2 — Gender doughnut */
+new Chart(document.getElementById('genderChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Female', 'Male'],
+        datasets: [{
+            data: [DATA.gender.female, DATA.gender.male],
+            backgroundColor: ['#FF8FA3', '#7C5CFF'],
+            borderWidth: 0,
+            hoverOffset: 4,
+        }],
+    },
+    options: {
+        responsive: false,
+        cutout: '72%',
+        plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}%` } },
+        },
+    },
+    plugins: [{
+        id: 'centerLabel',
+        beforeDraw(chart) {
+            const { width, height, ctx } = chart;
+            ctx.restore();
+            ctx.font = 'bold 20px sans-serif';
+            ctx.fillStyle = '#1A1A2E';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${DATA.gender.female}%`, width / 2, height / 2);
+            ctx.save();
+        },
+    }],
+});
+
+/* 3 — Time admitted line chart */
+new Chart(document.getElementById('timeChart'), {
+    type: 'line',
+    data: {
+        labels: DATA.timeAdmitted.labels,
+        datasets: [{
+            label: 'Patients',
+            data: DATA.timeAdmitted.values,
+            borderColor: '#FF8C42',
+            backgroundColor: (ctx) => {
+                const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 180);
+                g.addColorStop(0, 'rgba(255,140,66,0.18)');
+                g.addColorStop(1, 'rgba(255,140,66,0)');
+                return g;
+            },
+            fill: true,
+            tension: 0.45,
+            pointRadius: 4,
+            pointBackgroundColor: '#FF8C42',
+            pointBorderColor: 'white',
+            pointBorderWidth: 2,
+            borderWidth: 2.5,
+        }],
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                backgroundColor: '#1A1A2E',
+                padding: 8,
+                cornerRadius: 8,
+                displayColors: false,
+            },
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                border: { display: false },
+                ticks: { color: '#9CA3AF', font: { size: 11 } },
+            },
+            y: {
+                grid: { color: '#F3F4F6' },
+                border: { display: false },
+                ticks: { color: '#9CA3AF', font: { size: 11 } },
+            },
+        },
+    },
+});
+
+/* 4 — Sparkline */
+new Chart(document.getElementById('sparklineChart'), {
+    type: 'line',
+    data: {
+        labels: DATA.summary.sparkDates,
+        datasets: [{
+            data: DATA.summary.sparkline,
+            borderColor: 'rgba(255,255,255,0.85)',
+            backgroundColor: 'rgba(255,255,255,0.12)',
+            fill: true,
+            tension: 0.45,
+            pointRadius: 0,
+            borderWidth: 2,
+        }],
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: { x: { display: false }, y: { display: false } },
+    },
+});
+</script>
+
+</body>
+</html>
